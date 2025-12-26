@@ -1,0 +1,20 @@
+- name: Save log files in S3 bucket
+  hosts: servers
+
+  tasks:
+  - name: Check connection with servers
+    ansible.builtin.ping:
+  
+  - name: Create log directory
+    ansible.builtin.file:
+      path: /home/ec2-user/ansible-logs
+      state: directory
+      mode: '0755'
+  
+  - name: Write test log
+    ansible.builtin.copy:
+      content: |
+        hosts: {{ inventory_hostname }}
+        date: {{ ansible_date_time.iso8601 }}
+        message: hello from ansible lab23
+      dest: /home/ec2-user/ansible-logs/lab23.log

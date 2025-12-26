@@ -1,0 +1,12 @@
+- name: Upload log to S3 bucket
+  hosts: servers
+
+  vars:
+    s3_bucket: "{{ lookup('env', 'S3_BUCKET_NAME') }}"
+
+  tasks:
+  - name: Upload log to S3 bucket
+    ansible.builtin.command: >
+      aws s3 cp
+      /home/ec2-user/ansible-logs/lab23.log
+      s3://{{ s3_bucket }}/logs/{{ inventory_hostname }}.log
