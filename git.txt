@@ -1,5 +1,0 @@
-git clone git@github.com:dmytrokorobko/devops-infra-template.git .
-git remote remove origin
-git remote add origin git@github.com:dmytrokorobko/P23-s3-bucket-logs.git
-git commit -m "Initialize Lab 23 from infra template"
-git push -u origin main
