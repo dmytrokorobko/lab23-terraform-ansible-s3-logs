@@ -1,139 +1,90 @@
-# Terraform + Ansible Project Template
+# 🚀 Lab 23 — Centralized Ansible Logs in S3 using Terraform Outputs
 
-This repository is a personal infrastructure template for Terraform and Ansible projects.
-
-It follows a layered Terraform state approach (network, compute, logging, etc.)
-with explicit execution order and dynamic Ansible inventory.
-
-# 🚀 Project Name
-
-> **Brief Description:**  
-> One or two sentences that explain what the project does and why it exists.
+This lab demonstrates a full **infrastructure-to-operations workflow** on AWS, combining **Terraform, Ansible, IAM roles, and Amazon S3**.
+The focus is on clean separation of responsibilities, layered infrastructure design, and secure interaction between EC2 instances and AWS services without static credentials.
 
 ---
 
-## 🧱 Table of Contents
+## 🧠 Architecture Overview
 
-- [About](#-about)
-- [Demo](#-demo)
-- [Architecture](#-architecture)
-- [Project Structure](#-project-structure)
-- [Environment Variables](#-environment-variables)
-- [Setup](#-setup)
-- [Usage](#-usage)
-- [Deployment](#-deployment)
-- [CI/CD](#-cicd)
-- [Tech Stack](#-tech-stack)
-- [Contributing](#-contributing)
-- [License](#-license)
+The solution is built as a layered system:
+
+* **Terraform** provisions AWS infrastructure and exposes required data via outputs
+* **Ansible** consumes Terraform outputs through a dynamic inventory
+* **EC2 instances** use IAM roles to securely upload logs to S3
+* **Amazon S3** acts as a centralized log storage
+
+No access keys are stored on hosts or in Ansible configuration.
 
 ---
 
-## 🧩 About
+## ⚙️ Terraform Design
 
-Explain the main goal of the project and what problem it solves.  
-Add a short example or context of how it’s used in a real scenario.
+Terraform is organized into independent layers with isolated remote state:
 
----
+**01_network**
 
-## 📸 Demo
-![Diagram Screenshot](diagram.png)
+* VPC, subnets, routing, and internet gateway
+* Deterministic subnet placement across availability zones
+* Outputs exported for downstream layers
 
-## 🧠 Architecture
+**02_compute**
 
-Describe the high-level structure of your system.
+* EC2 instances running Amazon Linux
+* IAM role and instance profile for S3 access
+* Security groups and SSH access
+* Outputs exposing instance public IPs and S3 bucket name
 
-````mermaid
-graph TD
-  User --> LB[Load Balancer]
-  LB   --> API[API Server]
-  API  --> DB[(Database)]
-````
-
-(Replace this diagram with your actual setup — ALB + ECS + ECR + etc.)
+Cross-layer communication is implemented using ***terraform_remote_state***, enforcing explicit dependencies and avoiding implicit coupling.
 
 ---
 
-## 📁 Project Structure
-```bash
-.
-├── terraform/         # Infrastructure as Code
-├── ansible/           # Playbooks and roles
-├── jenkins/           # Pipeline definitions
-├── docker/            # Dockerfiles and compose files
-└── README.md
-```
+## ⚙️ Ansible Design
+
+Ansible is used strictly for configuration and operational tasks:
+
+**Dynamic inventory**
+
+* Generated from Terraform outputs at runtime
+* No static host definitions
+
+**Playbooks**
+
+* 01_create_log.yml — creates a test log file on each EC2 instance
+* 02_upload_log.yml — uploads logs to S3 using AWS CLI and IAM role
+
+The S3 bucket name is injected via environment variable on the control node, while authentication is handled entirely by the EC2 instance role.
 
 ---
 
-## 🌍 Environment Variables
-| Variable   | Description            | Example             |
-|------------|------------------------|---------------------|
-| ENV        | Deployment environment | `prod`              |
-| AWS_REGION | AWS region             | `us-east-1`         |
-| DB_HOST    | Database endpoint      | `db.example.com`    |
+## 🧰 IAM and Security Model
+
+* EC2 instances assume an IAM role via instance profile
+* IAM policy allows:
+  * s3:PutObject
+  * s3:ListBucket
+* No AWS credentials are stored in:
+  * Terraform
+  * Ansible
+  * EC2 filesystem
+
+This setup reflects a real-world, production-style AWS security model.
 
 ---
 
-## ⚙️ Setup
-### Prerequisites
-* Linux / macOS
-* Docker & Docker Compose
-* AWS CLI / Terraform / Ansible (if used)
+## 🧪 Key Takeaways
 
-### Installation
-```bash
-git clone https://github.com/username/project.git
-cd project
-./setup.sh
-```
+* Practical use of layered Terraform architecture with remote state
+* Clean separation between provisioning and configuration management
+* Secure AWS access using IAM roles instead of static credentials
+* Dynamic Ansible inventory driven by infrastructure outputs
+* Amazon Linux chosen to simplify AWS-native tooling integration
 
 ---
 
-## 🧰 Usage
-```bash
-make build
-make run
-```
+## 💡 Result
 
-or:
-
-```bash
-terraform apply
-ansible-playbook deploy.yml
-```
-
----
-
-## 🚀 Deployment
-Explain where and how it’s deployed (e.g., AWS ECS, EC2, Docker Compose, etc.)
-Include example environment variables if applicable:
-
-```bash
-export ENV=prod
-export AWS_REGION=us-east-1
-```
-
----
-
-## 🧪 CI/CD
-Describe the pipeline or automation you use:
-
-* Jenkins / GitHub Actions / GitLab CI
-* build → test → deploy → notify
-
-(Include badges or status links here if available)
-
----
-
-## 🧰 Tech Stack
-| Tool      | Purpose                  |
-|-----------|--------------------------|
-| Terraform | Infrastructure as Code   |
-| Ansible   | Configuration Management |
-| Docker    | Containerization         |
-| Jenkins   | CI/CD                    |
-| AWS       | Cloud Platform           |
+Each EC2 instance generates a log file and successfully uploads it to a shared S3 bucket, validating a complete and secure **Terraform → Ansible → AWS** workflow.
 
 ---
 
