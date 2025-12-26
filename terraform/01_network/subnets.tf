@@ -2,7 +2,7 @@ data "aws_availability_zones" "azs" {}
 
 locals {
   vpc_cidr_prefix = tonumber(split("/", var.vpc_cidr)[1])
-  true_azs = setsubtract(data.aws_availability_zones.azs.names, ["us-east-1e"])
+  true_azs = tolist(setsubtract(data.aws_availability_zones.azs.names, ["us-east-1e"]))
 }
 
 check "enough_azs" {
