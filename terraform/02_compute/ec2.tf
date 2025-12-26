@@ -10,7 +10,7 @@ resource "aws_iam_instance_profile" "ec2_instance_profile" {
 
 resource "aws_instance" "ec2" {
   count = length(data.terraform_remote_state.network_state.outputs.subnets_id)
-  ami = data.aws_ami.ubuntu_ami.id
+  ami = data.aws_ami.amazon_ami.id
   associate_public_ip_address = true
   instance_type = "t3.micro"
   key_name = "lab"

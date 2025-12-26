@@ -14,3 +14,20 @@ data "aws_ami" "ubuntu_ami" {
     values = ["hvm"]
   }
 }
+
+data "aws_ami" "amazon_ami" {
+  owners = ["137112412989"]
+  most_recent = true
+  filter {
+    name = "architecture"
+    values = ["x86_64"]
+  }
+  filter {
+    name = "name"
+    values = ["*al2023*"]
+  }
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
+  }
+}
