@@ -9,7 +9,7 @@ terraform {
   
   backend "s3" {
     bucket         = "dmytro-project-example-terraform-state"
-    key            = "lab23/network/terraform.tfstate"
+    key            = "lab23/compute/terraform.tfstate"
     region         = "us-east-1"
   }
 }
